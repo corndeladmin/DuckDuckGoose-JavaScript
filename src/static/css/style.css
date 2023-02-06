@@ -1,0 +1,30 @@
+@media screen and (max-width: 576px) {
+  html {
+    font-size: 12px;
+  }
+}
+
+:root {
+  --bs-border-color-translucent: rgba(var(--bs-primary-rgb), 0.75);
+}
+
+main {
+  width: 36rem;
+  max-width: 90%;
+  margin-top: 9rem;
+  background-color: #ffffffc0;
+}
+
+.pagination {
+  --bs-pagination-border-color: rgba(var(--bs-primary-rgb), 0.75);
+  --bs-pagination-hover-border-color: var(--bs-primary);
+}
+
+.btn-outline-light {
+  --bs-btn-hover-color: var(--bs-primary);
+  --bs-btn-active-color: var(--bs-primary);
+}
+
+::-ms-reveal, ::-ms-clear {
+  display: none;
+}
