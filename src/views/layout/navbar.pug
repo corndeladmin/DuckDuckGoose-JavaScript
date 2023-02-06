@@ -1,17 +1,13 @@
 .fixed-top
   nav.navbar.navbar-dark.bg-primary
     .container-fluid.justify-content-between
-      a.navbar-brand.d-flex.align-items-center(href="/honks")
+      a.navbar-brand.d-flex.align-items-center(href="/")
         img(src="/images/logo.png" alt="Logo" width="48" height="48" style="margin: -12px 0 -12px -6px;")
         | DuckDuckGoose
       .d-flex
         if currentUser.isAuthenticated
-          a.btn.btn-outline-light.me-2(href="/user/" + currentUser.id) My page
+          form.d-inline-block(method="post" action="/logout")
+            button.btn.btn-outline-light(type="submit") Log out
         else
           a.btn.btn-outline-light.me-2(href="/login") Log in
           a.btn.btn-outline-light(href="/register") Register
-  nav.navbar.navbar-expand-lg.bg-light.shadow
-    .container-fluid.justify-content-start
-      a.btn.btn-outline-primary.btn-sm.me-2(href="/honks") Honks
-      a.btn.btn-outline-primary.btn-sm.me-2(href="/users") Users
-      a.btn.btn-outline-primary.btn-sm(href="/honk") Post a honk

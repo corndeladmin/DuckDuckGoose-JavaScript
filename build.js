@@ -2,7 +2,8 @@
 require("esbuild").build({
   entryPoints: ["src/app.ts"],
   bundle: true,
-  minify: true,
+  minify: false,
+  sourcemap: true,
   platform: "node",
   outfile: "dist/app.js",
 }).then(() => console.debug("Built app"));
