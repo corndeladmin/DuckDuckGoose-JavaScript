@@ -35,7 +35,14 @@ app.get("/honks", (req, res) => {
     format,
     filter,
     search,
-  })
+  });
+});
+
+app.get("/honk", (req, res) => {
+  res.render("honk", {
+    currentUser: { isAuthenticated: false },
+    errors: [],
+  });
 });
 
 app.listen(3000);
