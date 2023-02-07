@@ -45,4 +45,15 @@ app.get("/honk", (req, res) => {
   });
 });
 
+app.post("/honk", (req, res) => {
+  const isValid = true;  // TODO: real validation
+
+  if (isValid) {
+    // TODO: create honk in db
+    res.redirect(303, "/honks");
+  } else {
+    res.redirect(303, "/honk");
+  }
+});
+
 app.listen(3000);
