@@ -56,4 +56,36 @@ app.post("/honk", (req, res) => {
   }
 });
 
+app.get("/users", (req, res) => {
+  const filter = req.query["filter"];
+  const search = req.query["search"];
+  const page = req.query["page"];
+
+  res.render("users", {
+    currentUser: { isAuthenticated: false },
+    users: {
+      total: 2,
+      items: [
+        {
+          id: 1,
+          username: "tim",
+          followers: ["emily"],
+          honks: ["honk!"],
+        },
+        {
+          id: 2,
+          username: "emily",
+          followers: ["tim"],
+          honks: ["honk!", "honk!!"],
+        },
+      ],
+      iterPages: () => [1, undefined, 3, undefined, 5],
+      page: page ?? 1,
+    },
+    format,
+    filter,
+    search,
+  });
+});
+
 app.listen(3000);

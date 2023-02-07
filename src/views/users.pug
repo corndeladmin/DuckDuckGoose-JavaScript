@@ -1,15 +1,15 @@
 extends layout/base
 
 block content
-  h1.fs-4.bg-info.border-top.border-start.border-end.border-primary.rounded-top.mb-0.p-2 See what people are saying.
+  h1.fs-4.bg-info.border-top.border-start.border-end.border-primary.rounded-top.mb-0.p-2 Find people you know.
   form.mb-3(method="get")
     .input-group
       if filter
         input(type="hidden" name="filter" value=filter)
       input#search.form-control.text-center(
         name="search"
-        placeholder="Search honks"
-        aria-label="Search honks"
+        placeholder="Search users"
+        aria-label="Search users"
         value=search ? search : ""
         style={ paddingLeft: "3.375rem", borderTopLeftRadius: 0 }
       )
@@ -17,37 +17,44 @@ block content
         i.bi.bi-search
   nav.nav.nav-pills.nav-justified
     a.nav-link.rounded-0.rounded-top(
-      href="/honks" + (search ? ("?search=" + search) : "")
+      href="/users" + (search ? ("?search=" + search) : "")
       class={
         active: filter !== "followed_users"
       }
-    ) All honks
+    ) Everyone
     a.nav-link.rounded-0.rounded-top(
-      href="/honks?filter=followed_users" + (search ? ("&search=" + search) : "")
+      href="/users?filter=followed_users" + (search ? ("&search=" + search) : "")
       class={
         active: filter === "followed_users"
       }
     ) People I follow
   .card.bg-info.border-primary.rounded-0.rounded-bottom
     .card-body
-      if honks.total > 0
-        each honk in honks.items
+      if users.total > 0
+        each user in users.items
           .card.text-start.mb-3
             .card-body
               h5.card-title
-                a.text-decoration-none(href="/user/" + honk.user.id)= "@" + honk.user.username
+                a.text-decoration-none(href="/user/" + user.id)= "@" + user.username
+              p.card-text
+                = user.followers.length
                 |
-                span.text-muted &bullet; #{format(honk.timestamp, "yyyy-MM-dd")}
-              p.card-text= honk.content
+                | follower#{user.followers.length === 1 ? "" : "s"}
+                |
+                | &bullet;
+                |
+                = user.honks.length
+                |
+                | honk#{user.honks.length === 1 ? "" : "s"}
         nav(aria-label="Page navigation")
           ul.pagination.justify-content-center.mb-0
-            each page in honks.iterPages(1, 1)
+            each page in users.iterPages(1, 1)
               if page
                 li(class={
                   "page-item": true,
-                  active: page === honks.page,
+                  active: page === users.page,
                 })
-                  a.page-link(href="/honks?page="
+                  a.page-link(href="/users?page="
                     + page
                     + (filter ? ("&filter=" + filter) : "")
                     + (search ? ("&search=" + search) : "")
@@ -56,4 +63,4 @@ block content
                 li.page-item
                   span.page-link &ctdot;
       else
-        p.card-text No honks to show.
+        p.card-text No users to show.
