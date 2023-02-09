@@ -137,4 +137,10 @@ app.get("/user/:userId", (req, res) => {
   });
 });
 
+app.get("/register", (req, res) => {
+  res.render("register", {
+    currentUser: { isAuthenticated: false },
+  });
+});
+
 app.listen(3000);

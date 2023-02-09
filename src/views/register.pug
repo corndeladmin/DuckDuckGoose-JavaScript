@@ -1,0 +1,43 @@
+extends layout/base
+
+block content
+  .card.border-primary
+    .card-header.bg-info.border-primary
+      h1.fs-4.mb-0 Welcome.
+    .card-body
+      form.mx-auto(method="post" style={ maxWidth: "24rem" })
+        .mb-3
+          label.form-label(for="username") Username
+          input#username.form-control.text-center(
+            maxlength=20
+            minlength=1
+            name="username"
+            required
+            type="text"
+          )
+        .mb-3
+          label.form-label(for="password") Password
+          input#password.form-control.text-center(
+            maxlength=255
+            minlength=8
+            name="password"
+            required
+            type="password"
+          )
+        .mb-4
+          label.form-label(for="confirm-password") Confirm password
+          input#confirm-password.form-control.text-center(
+            name="confirmPassword"
+            required
+            type="password"
+          )
+        input#submit.btn.btn-primary.w-100.mb-3(
+          name="submit"
+          type="submit"
+          value="Register"
+        )
+      small Already have an account?
+        |
+        a(href="{{ url_for('login') }}") Log in
+        |
+        | instead
