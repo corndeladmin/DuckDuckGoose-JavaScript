@@ -1,0 +1,86 @@
+extends layout/base
+
+block content
+  .bg-info.border-top.border-start.border-end.border-primary.rounded-top.p-2
+    h1.fs-4.mb-0
+      if currentUser.isAuthenticated && user.id === currentUser.id
+        | My honks
+      else
+        | Honks by @#{user.username}
+    if !currentUser.isAuthenticated
+      p.lm-sm.mt-1.mb-0
+        | You must
+        |
+        a(href="{{ url_for('login') }}") log in
+        |
+        | to follow
+        |
+        strong= user.username
+        | .
+    else if user.id === currentUser.id
+    else if user.followers.filter(follower => follower.id === currentUser.id).length === 0
+      form(method="post" action="{{ url_for('follow_user', user_id=user.id) }}")
+        p.lh-sm.mt-1.mb-0
+          | You aren't currently following
+          |
+          strong= user.username
+          | .
+          |
+          button.btn.btn-link.align-baseline.lh-sm.p-0(type="submit") Follow them
+          |
+          | to see their honks in your feed in future.
+    else
+      form(method="post" action="{{ url_for('unfollow_user', user_id=user.id) }}")
+        p.lh-sm.mt-1.mb-0
+          | You are currently following
+          |
+          strong= user.username
+          | .
+          |
+          button.btn.btn-link.align-baseline.lh-sm.p-0(type="submit") Unfollow them
+          |
+          | to stop seeing their honks in your feed.
+  form.mb-3(method="get")
+    .input-group
+      input.form-control.text-center(
+        name="search"
+        id="search"
+        placeholder="Search honks"
+        aria-label="Search honks"
+        value=search ? search : ""
+        style={ paddingLeft: "3.375rem", borderTopLeftRadius: 0 }
+      )
+      button.btn.btn-primary(
+        type="submit"
+        aria-label="Search"
+        style={ width: "2.625rem", borderTopRightRadius: 0 }
+      )
+        i.bi.bi-search
+  .card.bg-info.border-primary.rounded-0.rounded-bottom
+    .card-body
+      if user.honks.total > 0
+        each honk in user.honks.items
+          .card.text-start.mb-3
+            .card-body
+              h5.card-title= "@" + user.username
+                |
+                span.text-muted &bullet; #{format(honk.timestamp, "yyyy-MM-dd")}
+              p.card-text= honk.content
+        nav(aria-label="Page navigation")
+          ul.pagination.justify-content-center.mb-0
+            each page in user.honks.iterPages(1, 1)
+              if page
+                li(class={
+                  "page-item": true,
+                  active: page === user.honks.page,
+                })
+                  a.page-link(href="/user/"
+                  + user.id
+                  + "?page="
+                  + page
+                  + (search ? ("&search=" + search) : "")
+                  )= page
+              else
+                li.page-item
+                  span.page-link &ctdot;
+      else

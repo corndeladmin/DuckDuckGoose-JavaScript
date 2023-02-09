@@ -16,7 +16,7 @@ app.get("/", (req, res) => {
 app.get("/honks", (req, res) => {
   const filter = req.query["filter"];
   const search = req.query["search"];
-  const page = req.query["page"];
+  const page: number = req.query["page"] ? parseInt(req.query["page"] as string) : 1;
 
   res.render("honks", {
     currentUser: { isAuthenticated: false },
@@ -59,7 +59,7 @@ app.post("/honk", (req, res) => {
 app.get("/users", (req, res) => {
   const filter = req.query["filter"];
   const search = req.query["search"];
-  const page = req.query["page"];
+  const page: number = req.query["page"] ? parseInt(req.query["page"] as string) : 1;
 
   res.render("users", {
     currentUser: { isAuthenticated: false },
@@ -80,10 +80,59 @@ app.get("/users", (req, res) => {
         },
       ],
       iterPages: () => [1, undefined, 3, undefined, 5],
-      page: page ?? 1,
+      page: page,
     },
     format,
     filter,
+    search,
+  });
+});
+
+app.get("/user/:userId", (req, res) => {
+  const search = req.query["search"];
+  const page: number = req.query["page"] ? parseInt(req.query["page"] as string) : 1;
+
+  let user;
+  if (req.params["userId"] === "1") {
+    user = {
+      id: 1,
+      username: "tim",
+      followers: [{ id: 2 }],
+      honks: {
+        total: 1,
+        items: [
+          {
+            content: "I am a honk!",
+            timestamp: new Date(),
+          }
+        ],
+        iterPages: () => [1],
+        page,
+      }
+    };
+  } else if (req.params["userId"] === "2") {
+    user = {
+      id: 2,
+      username: "emily",
+      followers: [{ id: 1 }],
+      honks: {
+        total: 3,
+        items: [
+          {
+            content: `I am a honk on page ${page}!`,
+            timestamp: new Date(),
+          },
+        ],
+        iterPages: () => [1, undefined, 3, undefined, 5],
+        page,
+      }
+    };
+  }
+
+  res.render("user", {
+    currentUser: { isAuthenticated: true, id: 1 },
+    user,
+    format,
     search,
   });
 });
