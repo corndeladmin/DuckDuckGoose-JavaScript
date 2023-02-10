@@ -138,9 +138,35 @@ app.get("/user/:userId", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
+  const errors = {
+    username: [],
+    password: [],
+    confirmPassword: [],
+  };
+
   res.render("register", {
     currentUser: { isAuthenticated: false },
+    errors,
   });
+});
+
+app.post("/register", (req, res) => {
+  const isValid = true;  // TODO: real validation
+  const errors = {
+    username: [],
+    password: [],
+    confirmPassword: [],
+  };
+
+  if (isValid) {
+    // TODO: create user in db
+    res.redirect(303, "/login");
+  } else {
+    res.render("register", {
+      currentUser: { isAuthenticated: false },
+      errors,
+    });
+  }
 });
 
 app.listen(3000);

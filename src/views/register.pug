@@ -15,6 +15,8 @@ block content
             required
             type="text"
           )
+          each error in errors.username
+            span.text-danger= error
         .mb-3
           label.form-label(for="password") Password
           input#password.form-control.text-center(
@@ -24,6 +26,8 @@ block content
             required
             type="password"
           )
+          each error in errors.password
+            span.text-danger= error
         .mb-4
           label.form-label(for="confirm-password") Confirm password
           input#confirm-password.form-control.text-center(
@@ -31,6 +35,8 @@ block content
             required
             type="password"
           )
+          each error in errors.confirmPassword
+            span.text-danger= error
         input#submit.btn.btn-primary.w-100.mb-3(
           name="submit"
           type="submit"
@@ -38,6 +44,6 @@ block content
         )
       small Already have an account?
         |
-        a(href="{{ url_for('login') }}") Log in
+        a(href="/login") Log in
         |
         | instead
