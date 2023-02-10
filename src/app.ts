@@ -169,4 +169,10 @@ app.post("/register", (req, res) => {
   }
 });
 
+app.get("/login", (req, res) => {
+  res.render("login", {
+    currentUser: { isAuthenticated: false },
+  });
+});
+
 app.listen(3000);
