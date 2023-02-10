@@ -36,8 +36,8 @@ block content
             .card-body
               h5.card-title
                 a.text-decoration-none(href="/user/" + honk.user.id)= "@" + honk.user.username
-                |
-                span.text-muted &bullet; #{format(honk.timestamp, "yyyy-MM-dd")}
+                | 
+                span.text-muted &bullet; #{format(honk.createdAt, "yyyy-MM-dd")}
               p.card-text= honk.content
         nav(aria-label="Page navigation")
           ul.pagination.justify-content-center.mb-0

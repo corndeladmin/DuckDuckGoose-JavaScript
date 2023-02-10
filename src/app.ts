@@ -8,27 +8,35 @@ app.use(express.static(path.join(__dirname, "/static")));
 app.set("view engine", "pug");
 app.set("views", path.join(__dirname, "/views"));
 
+// database
+import { User, Honk } from "./database/index";
+const itemsPerPage = 5;
+
 // routes
 app.get("/", (req, res) => {
   res.render("welcome", { currentUser: { isAuthenticated: false } });
 });
 
-app.get("/honks", (req, res) => {
+app.get("/honks", async (req, res) => {
   const filter = req.query["filter"];
   const search = req.query["search"];
   const page: number = req.query["page"] ? parseInt(req.query["page"] as string) : 1;
 
+  const honks = await Honk.findAll({
+    order: [
+      ["createdAt", "DESC"],
+    ],
+    limit: itemsPerPage,
+    offset: (page - 1) * itemsPerPage,
+    include: User,
+  });
+  const totalHonks = await Honk.count();
+
   res.render("honks", {
     currentUser: { isAuthenticated: false },
     honks: {
-      total: 1,
-      items: [
-        {
-          user: { id: 1, username: "tim" },
-          content: "I am a honk!",
-          timestamp: new Date(),
-        }
-      ],
+      total: totalHonks,
+      items: honks,
       iterPages: () => [1],
       page,
     },
