@@ -5,7 +5,7 @@ User.hasMany(Honk);
 Honk.belongsTo(User);
 
 User.belongsToMany(User, {
-  as: "follower",
+  as: "followers",
   through: "follows",
   foreignKey: "followerId",
   otherKey: "followeeId",

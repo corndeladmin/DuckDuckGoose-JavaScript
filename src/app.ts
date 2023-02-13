@@ -10,6 +10,7 @@ app.set("views", path.join(__dirname, "/views"));
 
 // database
 import { User, Honk } from "./database/index";
+import { iterPages } from "./util";
 const itemsPerPage = 5;
 
 // routes
@@ -37,7 +38,7 @@ app.get("/honks", async (req, res) => {
     honks: {
       total: totalHonks,
       items: honks,
-      iterPages: () => [1],
+      pages: iterPages(page, Math.ceil(totalHonks / itemsPerPage)),
       page,
     },
     format,
@@ -64,30 +65,26 @@ app.post("/honk", (req, res) => {
   }
 });
 
-app.get("/users", (req, res) => {
+app.get("/users", async (req, res) => {
   const filter = req.query["filter"];
   const search = req.query["search"];
   const page: number = req.query["page"] ? parseInt(req.query["page"] as string) : 1;
 
+  const users = await User.findAll({
+    attributes: ["id", "username"],
+    order: ["username"],
+    limit: itemsPerPage,
+    offset: (page - 1) * itemsPerPage,
+    include: [Honk, { model: User, as: "followers" }],
+  });
+  const totalUsers = await User.count();
+
   res.render("users", {
     currentUser: { isAuthenticated: false },
     users: {
-      total: 2,
-      items: [
-        {
-          id: 1,
-          username: "tim",
-          followers: ["emily"],
-          honks: ["honk!"],
-        },
-        {
-          id: 2,
-          username: "emily",
-          followers: ["tim"],
-          honks: ["honk!", "honk!!"],
-        },
-      ],
-      iterPages: () => [1, undefined, 3, undefined, 5],
+      total: totalUsers,
+      items: users,
+      pages: iterPages(page, Math.ceil(totalUsers / itemsPerPage)),
       page: page,
     },
     format,

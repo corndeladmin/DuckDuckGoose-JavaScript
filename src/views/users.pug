@@ -48,7 +48,7 @@ block content
                 | honk#{user.honks.length === 1 ? "" : "s"}
         nav(aria-label="Page navigation")
           ul.pagination.justify-content-center.mb-0
-            each page in users.iterPages(1, 1)
+            each page in users.pages
               if page
                 li(class={
                   "page-item": true,

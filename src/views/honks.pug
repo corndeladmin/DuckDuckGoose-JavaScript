@@ -41,7 +41,7 @@ block content
               p.card-text= honk.content
         nav(aria-label="Page navigation")
           ul.pagination.justify-content-center.mb-0
-            each page in honks.iterPages(1, 1)
+            each page in honks.pages
               if page
                 li(class={
                   "page-item": true,
