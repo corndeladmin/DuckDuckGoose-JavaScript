@@ -10,7 +10,7 @@ app.set("views", path.join(__dirname, "/views"));
 
 // database
 import { User, Honk } from "./database/index";
-import { iterPages } from "./util";
+import { iterPages } from "./pagination";
 const itemsPerPage = 5;
 
 // routes
@@ -93,50 +93,51 @@ app.get("/users", async (req, res) => {
   });
 });
 
-app.get("/user/:userId", (req, res) => {
+app.get("/user/:userId", async (req, res) => {
   const search = req.query["search"];
   const page: number = req.query["page"] ? parseInt(req.query["page"] as string) : 1;
-
-  let user;
-  if (req.params["userId"] === "1") {
-    user = {
-      id: 1,
-      username: "tim",
-      followers: [{ id: 2 }],
-      honks: {
-        total: 1,
-        items: [
-          {
-            content: "I am a honk!",
-            timestamp: new Date(),
-          }
-        ],
-        iterPages: () => [1],
-        page,
-      }
-    };
-  } else if (req.params["userId"] === "2") {
-    user = {
-      id: 2,
-      username: "emily",
-      followers: [{ id: 1 }],
-      honks: {
-        total: 3,
-        items: [
-          {
-            content: `I am a honk on page ${page}!`,
-            timestamp: new Date(),
-          },
-        ],
-        iterPages: () => [1, undefined, 3, undefined, 5],
-        page,
-      }
-    };
+  let userId: number;
+  try {
+    userId = parseInt(req.params["userId"]);
+  } catch (e) {
+    throw new Error(`Unable to parse userId "${req.params["userId"]}" as integer`);
   }
+
+  const user = await User.findOne({
+    attributes: ["id", "username"],
+    where: {
+      id: userId
+    },
+    include: [{ model: User, as: "followers" }],
+  });
+  
+  if (user === null) {
+    res.sendStatus(404);
+    return;
+  }
+  
+  const userHonks = await Honk.findAndCountAll({
+    where: {
+      userId: userId
+    },
+    order: [
+      ["createdAt", "DESC"],
+    ],
+    limit: itemsPerPage,
+    offset: (page - 1) * itemsPerPage,
+  });
 
   res.render("user", {
     currentUser: { isAuthenticated: true, id: 1 },
-    user,
+    user: {
+      ...user.dataValues,
+      honks: {
+        total: userHonks.count,
+        items: userHonks.rows,
+        pages: iterPages(page, Math.ceil(userHonks.count / itemsPerPage)),
+        page,
+      },
+    },
     format,
     search,
   });

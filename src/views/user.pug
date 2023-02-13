@@ -63,12 +63,12 @@ block content
           .card.text-start.mb-3
             .card-body
               h5.card-title= "@" + user.username
-                |
+                | 
                 span.text-muted &bullet; #{format(honk.createdAt, "yyyy-MM-dd")}
               p.card-text= honk.content
         nav(aria-label="Page navigation")
           ul.pagination.justify-content-center.mb-0
-            each page in user.honks.iterPages(1, 1)
+            each page in user.honks.pages
               if page
                 li(class={
                   "page-item": true,
@@ -84,3 +84,4 @@ block content
                 li.page-item
                   span.page-link &ctdot;
       else
+        p.card-text No honks by this user.
