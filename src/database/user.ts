@@ -1,7 +1,12 @@
 import { DataTypes, Model } from "sequelize";
 import db from "./database";
 
-class User extends Model {}
+class User extends Model {
+  declare id: number;
+  declare username: string;
+  declare hashedPassword: Buffer;
+  declare salt: Buffer;
+}
 
 User.init({
   username: {
@@ -9,7 +14,11 @@ User.init({
     allowNull: false,
   },
   hashedPassword: {
-    type: DataTypes.STRING,
+    type: DataTypes.BLOB,
+    allowNull: false,
+  },
+  salt: {
+    type: DataTypes.BLOB,
     allowNull: false,
   },
 }, {
