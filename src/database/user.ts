@@ -6,6 +6,9 @@ class User extends Model {
   declare username: string;
   declare hashedPassword: Buffer;
   declare salt: Buffer;
+  
+  declare addFollower: (follower: User) => Promise<void>;
+  declare removeFollower: (follower: User) => Promise<void>;
 }
 
 User.init({

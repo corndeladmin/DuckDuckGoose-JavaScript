@@ -11,7 +11,7 @@ block content
       p.lm-sm.mt-1.mb-0
         | You must
         |
-        a(href="{{ url_for('login') }}") log in
+        a(href="/login") log in
         |
         | to follow
         |
@@ -19,7 +19,7 @@ block content
         | .
     else if user.id === currentUser.id
     else if user.followers.filter(follower => follower.id === currentUser.id).length === 0
-      form(method="post" action="{{ url_for('follow_user', user_id=user.id) }}")
+      form(method="post" action="/user/" + user.id + "/follow")
         p.lh-sm.mt-1.mb-0
           | You aren't currently following
           |
@@ -30,7 +30,7 @@ block content
           |
           | to see their honks in your feed in future.
     else
-      form(method="post" action="{{ url_for('unfollow_user', user_id=user.id) }}")
+      form(method="post" action="/user/" + user.id + "/unfollow")
         p.lh-sm.mt-1.mb-0
           | You are currently following
           |

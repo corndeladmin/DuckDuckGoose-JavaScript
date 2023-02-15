@@ -243,6 +243,56 @@ app.get("/user/:userId", async (req, res) => {
   });
 });
 
+app.post("/user/:userId/follow", requiresLogin, async (req, res) => {
+  let userId: number;
+  try {
+    userId = parseInt(req.params["userId"]);
+  } catch (e) {
+    throw new Error(`Unable to parse userId "${req.params["userId"]}" as integer`);
+  }
+  
+  const thisUser = await DbUser.findOne({
+    where: {
+      id: req.user.id,
+    },
+  });
+  
+  const userToFollow = await DbUser.findOne({
+    where: {
+      id: userId,
+    },
+  });
+  
+  await userToFollow.addFollower(thisUser);
+  
+  res.redirect(303, `/user/${userId}`);
+});
+
+app.post("/user/:userId/unfollow", requiresLogin, async (req, res) => {
+  let userId: number;
+  try {
+    userId = parseInt(req.params["userId"]);
+  } catch (e) {
+    throw new Error(`Unable to parse userId "${req.params["userId"]}" as integer`);
+  }
+
+  const thisUser = await DbUser.findOne({
+    where: {
+      id: req.user.id,
+    },
+  });
+
+  const userToFollow = await DbUser.findOne({
+    where: {
+      id: userId,
+    },
+  });
+
+  await userToFollow.removeFollower(thisUser);
+
+  res.redirect(303, `/user/${userId}`);
+});
+
 app.get("/register", (req, res) => {
   const errors = {
     username: [],
