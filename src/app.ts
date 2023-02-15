@@ -273,6 +273,15 @@ app.get("/login", (req, res) => {
 app.post("/login", passport.authenticate("local", {
   successRedirect: "/honks",
   failureRedirect: "/login",
-}))
+}));
+
+app.post("/logout", (req, res, next) => {
+  req.logout((err) => {
+    if (err) {
+      return next(err);
+    }
+    res.redirect(303, "/");
+  });
+});
 
 app.listen(3000);
