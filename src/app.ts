@@ -2,7 +2,7 @@ import * as path from "path";
 import { format } from "date-fns";
 
 // express
-import express from "express";
+import express, { RequestHandler } from "express";
 const app = express();
 app.use(express.static(path.join(__dirname, "/static")));
 app.use(express.urlencoded());
@@ -79,6 +79,15 @@ passport.deserializeUser((id, done) => {
     });
 });
 
+// my middleware
+const requiresLogin: RequestHandler = (req, res, next) => {
+  if (req.user === undefined) {
+    res.redirect(303, "/login");
+  } else {
+    next();
+  }
+}
+
 // routes
 app.get("/", (req, res) => {
   res.render("welcome", {
@@ -121,7 +130,7 @@ app.get("/honks", async (req, res) => {
   });
 });
 
-app.get("/honk", (req, res) => {
+app.get("/honk", requiresLogin, (req, res) => {
   res.render("honk", {
     currentUser: {
       isAuthenticated: req.user !== undefined,
@@ -131,12 +140,20 @@ app.get("/honk", (req, res) => {
   });
 });
 
-app.post("/honk", (req, res) => {
+app.post("/honk", requiresLogin, (req, res) => {
   const isValid = true;  // TODO: real validation
 
   if (isValid) {
-    // TODO: create honk in db
-    res.redirect(303, "/honks");
+    Honk.create({
+      content: req.body.content,
+      userId: req.user.id,
+    })
+      .then(() => res.redirect(303, "/honks"))
+      .catch((reason) => {
+        console.error("Unable to create honk");
+        console.error(reason);
+        res.redirect(303, "/honk");
+      });
   } else {
     res.redirect(303, "/honk");
   }
