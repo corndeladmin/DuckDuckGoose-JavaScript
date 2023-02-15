@@ -83,8 +83,8 @@ passport.deserializeUser((id, done) => {
 app.get("/", (req, res) => {
   res.render("welcome", {
     currentUser: {
-      isAuthenticated: false,
-      ...req.user,
+      isAuthenticated: req.user !== undefined,
+      id: req.user?.id,
     },
   });
 });
@@ -105,7 +105,10 @@ app.get("/honks", async (req, res) => {
   const totalHonks = await Honk.count();
 
   res.render("honks", {
-    currentUser: { isAuthenticated: false },
+    currentUser: {
+      isAuthenticated: req.user !== undefined,
+      id: req.user?.id,
+    },
     honks: {
       total: totalHonks,
       items: honks,
@@ -120,7 +123,10 @@ app.get("/honks", async (req, res) => {
 
 app.get("/honk", (req, res) => {
   res.render("honk", {
-    currentUser: { isAuthenticated: false },
+    currentUser: {
+      isAuthenticated: req.user !== undefined,
+      id: req.user?.id,
+    },
     errors: [],
   });
 });
@@ -151,7 +157,10 @@ app.get("/users", async (req, res) => {
   const totalUsers = await DbUser.count();
 
   res.render("users", {
-    currentUser: { isAuthenticated: false },
+    currentUser: {
+      isAuthenticated: req.user !== undefined,
+      id: req.user?.id,
+    },
     users: {
       total: totalUsers,
       items: users,
@@ -199,7 +208,10 @@ app.get("/user/:userId", async (req, res) => {
   });
 
   res.render("user", {
-    currentUser: { isAuthenticated: true, id: 1 },
+    currentUser: {
+      isAuthenticated: req.user !== undefined,
+      id: req.user?.id,
+    },
     user: {
       ...user.dataValues,
       honks: {
@@ -222,7 +234,10 @@ app.get("/register", (req, res) => {
   };
 
   res.render("register", {
-    currentUser: { isAuthenticated: false },
+    currentUser: {
+      isAuthenticated: req.user !== undefined,
+      id: req.user?.id,
+    },
     errors,
   });
 });
@@ -258,7 +273,10 @@ app.post("/register", (req, res, next) => {
     });
   } else {
     res.render("register", {
-      currentUser: { isAuthenticated: false },
+      currentUser: {
+        isAuthenticated: req.user !== undefined,
+        id: req.user?.id,
+      },
       errors,
     });
   }
@@ -266,7 +284,10 @@ app.post("/register", (req, res, next) => {
 
 app.get("/login", (req, res) => {
   res.render("login", {
-    currentUser: { isAuthenticated: false },
+    currentUser: {
+      isAuthenticated: req.user !== undefined,
+      id: req.user?.id,
+    },
   });
 });
 
