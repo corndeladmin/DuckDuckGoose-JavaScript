@@ -10,6 +10,7 @@ app.set("view engine", "pug");
 app.set("views", path.join(__dirname, "/views"));
 
 // database
+import { Includeable, Op, WhereOptions } from "sequelize";
 import { db, User as DbUser, Honk } from "./database/index";
 import { iterPages } from "./pagination";
 const itemsPerPage = 5;
@@ -36,6 +37,7 @@ app.use(session({
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import crypto from "node:crypto";
+import user from "./database/user";
 passport.use(new LocalStrategy(async (username, password, done) => {
   const user = await DbUser.findOne({
     where: {
@@ -103,15 +105,37 @@ app.get("/honks", async (req, res) => {
   const search = req.query["search"];
   const page: number = req.query["page"] ? parseInt(req.query["page"] as string) : 1;
 
-  const honks = await Honk.findAll({
+  let where: WhereOptions<Honk> = {};
+  let include: Includeable = {
+    model: DbUser,
+    required: true,
+  };
+  
+  if (filter === "followed_users" && req.user) {
+    include.include = [{
+      model: DbUser,
+      as: "followers",
+      where: {
+        id: req.user.id,
+      },
+    }];
+  }
+  
+  if (search !== undefined) {
+    where["content"] = {
+      [Op.iLike]: `%${search}%`,
+    };
+  }
+  
+  const honks = await Honk.findAndCountAll({
     order: [
       ["createdAt", "DESC"],
     ],
-    limit: itemsPerPage,
+    // limit: itemsPerPage,
     offset: (page - 1) * itemsPerPage,
-    include: DbUser,
+    include: include,
+    where: where,
   });
-  const totalHonks = await Honk.count();
 
   res.render("honks", {
     currentUser: {
@@ -119,9 +143,9 @@ app.get("/honks", async (req, res) => {
       id: req.user?.id,
     },
     honks: {
-      total: totalHonks,
-      items: honks,
-      pages: iterPages(page, Math.ceil(totalHonks / itemsPerPage)),
+      total: honks.count,
+      items: honks.rows,
+      pages: iterPages(page, Math.ceil(honks.count / itemsPerPage)),
       page,
     },
     format,

@@ -15,19 +15,20 @@ block content
       )
       button.btn.btn-primary(type="submit" aria-label="Search" style={ width: "2.625rem", borderTopRightRadius: 0 })
         i.bi.bi-search
-  nav.nav.nav-pills.nav-justified
-    a.nav-link.rounded-0.rounded-top(
-      href="/honks" + (search ? ("?search=" + search) : "")
-      class={
-        active: filter !== "followed_users"
-      }
-    ) All honks
-    a.nav-link.rounded-0.rounded-top(
-      href="/honks?filter=followed_users" + (search ? ("&search=" + search) : "")
-      class={
-        active: filter === "followed_users"
-      }
-    ) People I follow
+  if currentUser.isAuthenticated
+    nav.nav.nav-pills.nav-justified
+      a.nav-link.rounded-0.rounded-top(
+        href="/honks" + (search ? ("?search=" + search) : "")
+        class={
+          active: filter !== "followed_users"
+        }
+      ) All honks
+      a.nav-link.rounded-0.rounded-top(
+        href="/honks?filter=followed_users" + (search ? ("&search=" + search) : "")
+        class={
+          active: filter === "followed_users"
+        }
+      ) People I follow
   .card.bg-info.border-primary.rounded-0.rounded-bottom
     .card-body
       if honks.total > 0
