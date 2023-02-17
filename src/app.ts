@@ -236,11 +236,19 @@ app.get("/user/:userId", async (req, res) => {
     res.sendStatus(404);
     return;
   }
+
+  let where: WhereOptions<Honk> = {
+    userId: userId,
+  };
+
+  if (search !== undefined) {
+    where["content"] = {
+      [Op.iLike]: `%${search}%`,
+    };
+  }
   
   const userHonks = await Honk.findAndCountAll({
-    where: {
-      userId: userId
-    },
+    where: where,
     order: [
       ["createdAt", "DESC"],
     ],

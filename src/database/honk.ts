@@ -1,7 +1,9 @@
 import { DataTypes, Model } from "sequelize";
 import db from "./database";
 
-class Honk extends Model {}
+class Honk extends Model {
+  declare userId: number;
+}
 
 Honk.init({
   content: {
