@@ -314,13 +314,13 @@ app.post("/user/:userId/unfollow", requiresLogin, async (req, res) => {
     },
   });
 
-  const userToFollow = await DbUser.findOne({
+  const userToUnfollow = await DbUser.findOne({
     where: {
       id: userId,
     },
   });
 
-  await userToFollow.removeFollower(thisUser);
+  await userToUnfollow.removeFollower(thisUser);
 
   res.redirect(303, `/user/${userId}`);
 });
