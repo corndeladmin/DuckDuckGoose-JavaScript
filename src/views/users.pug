@@ -37,15 +37,15 @@ block content
               h5.card-title
                 a.text-decoration-none(href="/user/" + user.id)= "@" + user.username
               p.card-text
-                = user.followers.length
+                = user.nFollowers
                 |
-                | follower#{user.followers.length === 1 ? "" : "s"}
+                | follower#{user.nFollowers === 1 ? "" : "s"}
                 |
                 | &bullet;
                 |
-                = user.honks.length
+                = user.nHonks
                 |
-                | honk#{user.honks.length === 1 ? "" : "s"}
+                | honk#{user.nHonks === 1 ? "" : "s"}
         nav(aria-label="Page navigation")
           ul.pagination.justify-content-center.mb-0
             each page in users.pages

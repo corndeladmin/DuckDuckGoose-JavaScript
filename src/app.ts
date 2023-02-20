@@ -3,16 +3,25 @@ import { format } from "date-fns";
 
 // express
 import express, { RequestHandler } from "express";
+// database
+import { Includeable, Op, QueryTypes, WhereOptions } from "sequelize";
+import { db, Honk, User as DbUser } from "./database/index";
+import { iterPages } from "./pagination";
+// sessions
+import session from "express-session";
+import sessionSequelize from "connect-session-sequelize";
+// authentication
+import passport from "passport";
+import { Strategy as LocalStrategy } from "passport-local";
+import crypto from "node:crypto";
+import user from "./database/user";
+
 const app = express();
 app.use(express.static(path.join(__dirname, "/static")));
 app.use(express.urlencoded());
 app.set("view engine", "pug");
 app.set("views", path.join(__dirname, "/views"));
 
-// database
-import { Includeable, Op, WhereOptions } from "sequelize";
-import { db, User as DbUser, Honk } from "./database/index";
-import { iterPages } from "./pagination";
 const itemsPerPage = 5;
 declare global {
   namespace Express {
@@ -20,9 +29,6 @@ declare global {
   }
 }
 
-// sessions
-import session from "express-session";
-import sessionSequelize from "connect-session-sequelize";
 const SequelizeStore = sessionSequelize(session.Store);
 app.use(session({
   secret: "duck duck duck goose goose",
@@ -33,11 +39,6 @@ app.use(session({
   }),
 }));
 
-// authentication
-import passport from "passport";
-import { Strategy as LocalStrategy } from "passport-local";
-import crypto from "node:crypto";
-import user from "./database/user";
 passport.use(new LocalStrategy(async (username, password, done) => {
   const user = await DbUser.findOne({
     where: {
@@ -131,7 +132,7 @@ app.get("/honks", async (req, res) => {
     order: [
       ["createdAt", "DESC"],
     ],
-    // limit: itemsPerPage,
+    limit: itemsPerPage,
     offset: (page - 1) * itemsPerPage,
     include: include,
     where: where,
@@ -187,15 +188,89 @@ app.get("/users", async (req, res) => {
   const filter = req.query["filter"];
   const search = req.query["search"];
   const page: number = req.query["page"] ? parseInt(req.query["page"] as string) : 1;
+  
+  const whereClauses: string[] = [];
+  
+  if (filter === "followed_users" && req.user) {
+    whereClauses.push(`f."followerId" = :userId`);
+  }
+  
+  if (search) {
+    whereClauses.push(`u."username" LIKE CONCAT('%', :search, '%')`);
+  }
 
-  const users = await DbUser.findAll({
-    attributes: ["id", "username"],
-    order: ["username"],
-    limit: itemsPerPage,
-    offset: (page - 1) * itemsPerPage,
-    include: [Honk, { model: DbUser, as: "followers" }],
-  });
-  const totalUsers = await DbUser.count();
+  // have to use raw SQL because sequelize isn't very well written
+  // notice, no string interpolation of variables, to avoid SQL injection
+  // https://xkcd.com/327/
+  const query = `
+    SELECT
+      u."id" AS "id",
+      u."username" AS "username",
+      u."nHonks" AS "nHonks",
+      u."nFollowers" AS "nFollowers"
+    FROM (
+      SELECT
+        u."id" AS "id",
+        u."username" AS "username",
+        u."nHonks" AS "nHonks",
+        COUNT(f."followerId") AS "nFollowers"
+      FROM (
+        SELECT
+          u."id" AS "id",
+          u."username" AS "username",
+          COUNT(h."id") AS "nHonks"
+        FROM
+          users u
+          LEFT JOIN honks h
+            ON u."id" = h."userId"
+        ${search ? `WHERE u."username" LIKE CONCAT('%', :search, '%')` : ""}
+        GROUP BY u."id"
+        ORDER BY u."username"
+      ) AS u
+      LEFT JOIN follows f ON f."followeeId" = u."id"
+      GROUP BY u."id", u."username", u."nHonks"
+    ) AS u
+    LEFT JOIN follows f ON f."followeeId" = u."id"
+    ${filter === "followed_users" && req.user ? `WHERE f."followerId" = :userId` : ""}
+    GROUP BY u."id", u."username", u."nHonks", u."nFollowers"
+    LIMIT :limit OFFSET :offset;
+  `;
+  const countQuery = `
+    SELECT
+      COUNT(*) AS "total"
+    FROM users u
+    ${filter === "followed_users" && req.user ? `LEFT JOIN follows f ON f."followeeId" = u."id"` : ""}
+    ${whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : ""};
+  `;
+  
+  const users = await db.query<{
+    id: number,
+    username: string,
+    nHonks: string,
+    nFollowers: string,
+  }>(
+    query,
+    {
+      replacements: {
+        limit: itemsPerPage,
+        offset: (page - 1) * itemsPerPage,
+        userId: req.user?.id,
+        search: search,
+      },
+      type: QueryTypes.SELECT,
+    }
+  );
+  const userTotalResult = await db.query<{ total: string }>(
+    countQuery,
+    {
+      replacements: {
+        userId: req.user?.id,
+        search: search,
+      },
+      type: QueryTypes.SELECT,
+    }
+  );
+  const userTotal: number = parseInt(userTotalResult[0].total);
 
   res.render("users", {
     currentUser: {
@@ -203,9 +278,9 @@ app.get("/users", async (req, res) => {
       id: req.user?.id,
     },
     users: {
-      total: totalUsers,
+      total: userTotal,
       items: users,
-      pages: iterPages(page, Math.ceil(totalUsers / itemsPerPage)),
+      pages: iterPages(page, Math.ceil(userTotal / itemsPerPage)),
       page: page,
     },
     format,
