@@ -1,9 +1,9 @@
 import * as path from "path";
 
 // express
-import express from "express";
+import express, { RequestHandler } from "express";
 // database
-import { db, User as DbUser } from "./database/index";
+import { db, Honk, User as DbUser } from "./database/index";
 // sessions
 import session from "express-session";
 import sessionSequelize from "connect-session-sequelize";
@@ -77,6 +77,15 @@ passport.deserializeUser((id, done) => {
     });
 });
 
+// my middleware
+const requiresLogin: RequestHandler = (req, res, next) => {
+  if (req.user === undefined) {
+    res.redirect(303, "/login");
+  } else {
+    next();
+  }
+}
+
 // routes
 app.get("/", (req, res) => {
   res.render("welcome", {
@@ -85,6 +94,29 @@ app.get("/", (req, res) => {
       id: req.user?.id,
     },
   });
+});
+
+app.get("/honk", requiresLogin, (req, res) => {
+  res.render("honk", {
+    currentUser: {
+      isAuthenticated: req.user !== undefined,
+      id: req.user?.id,
+    },
+    errors: [],
+  });
+});
+
+app.post("/honk", requiresLogin, (req, res) => {
+  const isValid = true;  // TODO: real validation
+
+  if (isValid) {
+    Honk.build({
+      content: req.body.content,
+      userId: req.user.id,
+    });
+  } else {
+    res.redirect(303, "/honk");
+  }
 });
 
 app.get("/register", (req, res) => {
