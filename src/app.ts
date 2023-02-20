@@ -196,7 +196,7 @@ app.get("/users", async (req, res) => {
   }
   
   if (search) {
-    whereClauses.push(`u."username" LIKE CONCAT('%', :search, '%')`);
+    whereClauses.push(`u."username" ILIKE CONCAT('%', :search, '%')`);
   }
 
   // have to use raw SQL because sequelize isn't very well written
@@ -223,7 +223,7 @@ app.get("/users", async (req, res) => {
           users u
           LEFT JOIN honks h
             ON u."id" = h."userId"
-        ${search ? `WHERE u."username" LIKE CONCAT('%', :search, '%')` : ""}
+        ${search ? `WHERE u."username" ILIKE CONCAT('%', :search, '%')` : ""}
         GROUP BY u."id"
         ORDER BY u."username"
       ) AS u
