@@ -1,0 +1,22 @@
+extends layout/base
+
+block content
+  .card.border-primary
+    .card-header.bg-info.border-primary
+      h1.fs-4.mb-0 Honk about something.
+    .card-body
+      form.mx-auto(method="post")
+        .mb-3
+          textarea#content.form-control(
+            aria-label="Write your honk"
+            maxlength=255
+            name="content"
+            required
+            rows=3
+            class={
+              "is-invalid": errors.length > 0,
+            }
+          )
+          each error in errors
+            span(class="text-danger")= error
+        button.btn.btn-primary(type="submit") Honk
