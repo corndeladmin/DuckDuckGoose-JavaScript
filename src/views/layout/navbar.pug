@@ -6,6 +6,7 @@
         | DuckDuckGoose
       .d-flex
         if currentUser.isAuthenticated
+          a.btn.btn-outline-light.me-2(href="/user/" + currentUser.id) My page
           form.d-inline-block(method="post" action="/logout")
             button.btn.btn-outline-light(type="submit") Log out
         else

@@ -1,9 +1,12 @@
 import * as path from "path";
+import { format } from "date-fns";
 
 // express
 import express from "express";
 // database
-import { db, User as DbUser } from "./database/index";
+import { Op, WhereOptions } from "sequelize";
+import { db, Honk, User as DbUser } from "./database/index";
+import { iterPages } from "./pagination";
 // sessions
 import session from "express-session";
 import sessionSequelize from "connect-session-sequelize";
@@ -11,6 +14,7 @@ import sessionSequelize from "connect-session-sequelize";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import crypto from "node:crypto";
+import user from "./database/user";
 
 const app = express();
 app.use(express.static(path.join(__dirname, "/static")));
@@ -18,6 +22,7 @@ app.use(express.urlencoded());
 app.set("view engine", "pug");
 app.set("views", path.join(__dirname, "/views"));
 
+const itemsPerPage = 5;
 declare global {
   namespace Express {
     interface User extends DbUser {}
@@ -85,6 +90,66 @@ app.get("/", (req, res) => {
       id: req.user?.id,
     },
   });
+});
+
+app.get("/user/:userId", async (req, res, next) => {
+  try {
+    const search = req.query["search"];
+    const page: number = req.query["page"] ? parseInt(req.query["page"] as string) : 1;
+    let userId: number;
+    try {
+      userId = parseInt(req.params["userId"]);
+    } catch (e) {
+      throw new Error(`Unable to parse userId "${req.params["userId"]}" as integer`);
+    }
+
+    const user = await DbUser.findOne({
+      attributes: ["id", "username"],
+      where: {
+        id: userId
+      }
+    });
+
+    let where: WhereOptions<Honk> = {
+      userId: userId,
+    };
+
+    if (search !== undefined) {
+      where["content"] = {
+        [Op.iLike]: `%${search}%`,
+      };
+    }
+    
+    const userHonks = await Honk.findAndCountAll({
+      where: where,
+      order: [
+        ["createdAt", "DESC"],
+      ],
+      limit: itemsPerPage,
+      offset: (page - 1) * itemsPerPage,
+    });
+
+    res.render("user", {
+      currentUser: {
+        isAuthenticated: req.user !== undefined,
+        id: req.user?.id,
+      },
+      user: {
+        ...user.dataValues,
+        honks: {
+          total: userHonks.count,
+          items: userHonks.rows,
+          pages: iterPages(page, Math.ceil(userHonks.count / itemsPerPage)),
+          page,
+        },
+      },
+      format,
+      search,
+    });
+  }
+  catch(err) {
+    next(err)
+  }
 });
 
 app.get("/register", (req, res) => {
