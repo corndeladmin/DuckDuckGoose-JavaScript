@@ -1,9 +1,12 @@
 import * as path from "path";
+import { format } from "date-fns";
 
 // express
 import express from "express";
 // database
-import { db, User as DbUser } from "./database/index";
+import { Includeable, Op, WhereOptions } from "sequelize";
+import { db, Honk, User as DbUser } from "./database/index";
+import { iterPages } from "./pagination";
 // sessions
 import session from "express-session";
 import sessionSequelize from "connect-session-sequelize";
@@ -18,6 +21,7 @@ app.use(express.urlencoded());
 app.set("view engine", "pug");
 app.set("views", path.join(__dirname, "/views"));
 
+const itemsPerPage = 5;
 declare global {
   namespace Express {
     interface User extends DbUser {}
@@ -87,6 +91,50 @@ app.get("/", (req, res) => {
   });
 });
 
+app.get("/honks", async (req, res) => {
+  const filter = req.query["filter"];
+  const search = req.query["search"];
+  const page: number = req.query["page"] ? parseInt(req.query["page"] as string) : 1;
+
+  let where: WhereOptions<Honk> = {};
+  let include: Includeable = {
+    model: DbUser,
+    required: true,
+  };
+  
+  if (search !== undefined) {
+    where["content"] = {
+      [Op.iLike]: `%${search}%`,
+    };
+  }
+  
+  const honks = await Honk.findAndCountAll({
+    order: [
+      ["createdAt", "DESC"],
+    ],
+    limit: itemsPerPage,
+    offset: (page - 1) * itemsPerPage,
+    include: include,
+    where: where,
+  });
+
+  res.render("honks", {
+    currentUser: {
+      isAuthenticated: req.user !== undefined,
+      id: req.user?.id,
+    },
+    honks: {
+      total: honks.count,
+      items: honks.rows,
+      pages: iterPages(page, Math.ceil(honks.count / itemsPerPage)),
+      page,
+    },
+    format,
+    filter,
+    search,
+  });
+});
+
 app.get("/register", (req, res) => {
   const errors = {
     username: [],
@@ -121,7 +169,7 @@ app.post("/register", (req, res, next) => {
         return next(err);
       }
       
-      res.redirect(303, "/");
+      res.redirect(303, "/honks");
     })
   });
 });
@@ -136,7 +184,7 @@ app.get("/login", (req, res) => {
 });
 
 app.post("/login", passport.authenticate("local", {
-  successRedirect: "/",
+  successRedirect: "/honks",
   failureRedirect: "/login",
 }));
 
