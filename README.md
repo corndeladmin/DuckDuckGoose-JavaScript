@@ -27,6 +27,8 @@
 1.  Run the app:
 `npm run start`
 
+1. The app should now be available at https://localhost:3000
+
 ## Setting up PostgreSQL
 
 Before you run the app you will need to make sure you've got PostgreSQL installed and a database set up.
@@ -35,17 +37,16 @@ Before you run the app you will need to make sure you've got PostgreSQL installe
 
 1. Download and install the [PostgreSQL server software](https://www.enterprisedb.com/downloads/postgres-postgresql-downloads) if you haven't already.
 
-1. Make sure you've added Postgres to your PATH (`C:\Program Files\PostgreSQL\<your version number>\bin`).
-
-1. Open the Windows Start menu and search for "pgAdmin". When you start "pgAdmin" for the first time, you'll be asked to set a password for your superuser. You'll need this password in a moment on step 4.
+1. Open the Windows Start menu and search for "pgAdmin". When you start "pgAdmin" for the first time, you'll be asked to set a master password.
 
 ### Set up the DuckDuckGoose user
 
-1. Inside your PostgreSQL server, right-click on Login/Group Roles and create a new Login/Group Role with the name `duckduckgoose` (in the General tab), the password `duckduckgoose` (in the Definition tab) and the ability to log in and create databases (in the Privileges tab).
+1. Inside your PostgreSQL server in pgAdmin, right-click on *Login/Group Roles* and create a new Login/Group Role with the name `duckduckgoose` (in the *General* tab), the password `duckduckgoose` (in the *Definition* tab) and the ability to log in and create databases (in the *Privileges* tab).
+
 1. Click Save to create the user.
 
 ### Set up DuckDuckGoose database
 
-1. Inside your PostgreSQL server, right-click on Databases and create a new Database with the name `duckduckgoose` and the owner `duckduckgoose` (both in the General tab).
-1. Click Save to create the database.
+1. Inside your PostgreSQL server in pgAdmin, right-click on *Databases* and create a new Database with the name `duckduckgoose` and the owner `duckduckgoose` (both in the *General* tab).
 
+1. Click Save to create the database.
